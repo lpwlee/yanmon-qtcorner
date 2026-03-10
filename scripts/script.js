@@ -2,7 +2,7 @@
 // Update these values when needed
 const CONFIG = {
     // Google Apps Script URL
-    SCRIPT_URL: "https://script.google.com/macros/s/AKfycbz9T784H2pkKRDj1hPTiOVxsi0rF6cQGucdjfKWAR3HBnppKIRUWbSUJPA4fZwPBB70/exec",
+    SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzi4hOQw5H65sMOqH7O9jA4mOBYdQxTxQy5JO9seqbeayJ_he3lpbvET74lVagM8PcM/exec",
     
     // Google API Configuration
     GOOGLE_API_KEY: "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",
@@ -11,7 +11,7 @@ const CONFIG = {
     // Date formats
     DATE_FORMAT: {
         PICKER: "Y-m-d",           // Format for Flatpickr
-        API: "YYYY/M/D",            // Format sent to API (no leading zeros)
+        API: "YYYY/MM/DD",          // Format sent to API (WITH leading zeros)
         DISPLAY: "M月D日"            // Format shown to users
     },
     
@@ -52,14 +52,14 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById("fetchButton").addEventListener("click", fetchDevotionalForDate);
 });
 
-// Format date to match the format in your sheet (actual value is "2026/3/6")
+// Format date to match the format in your sheet (WITH leading zeros)
 function formatDateToSheetFormat(dateStr) {
     const date = new Date(dateStr);
     const year = date.getFullYear();
-    const month = date.getMonth() + 1; // JavaScript months are 0-based
-    const day = date.getDate();
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Add leading zero
+    const day = String(date.getDate()).padStart(2, '0'); // Add leading zero
     
-    // Return in YYYY/M/D format (no leading zeros)
+    // Return in YYYY/MM/DD format (WITH leading zeros)
     return `${year}/${month}/${day}`;
 }
 
@@ -85,8 +85,8 @@ function fetchDevotionalForDate() {
     const displayDate = formatDateForDisplay(selectedDate);
     
     console.log("Selected date (raw):", selectedDate);
-    console.log("Sending to API (YYYY/M/D):", formattedDate);
-    console.log("Display format (M月D日):", displayDate);
+    console.log("Sending to API (YYYY/MM/DD):", formattedDate); // Should be "2026/03/09"
+    console.log("Display format (M月D日):", displayDate); // Should be "3月9日"
     
     // Show loading state
     const dataDisplay = document.getElementById("dataDisplay");
