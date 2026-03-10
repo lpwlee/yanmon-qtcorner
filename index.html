@@ -1,3 +1,5 @@
+<script src="https://apis.google.com/js/api.js"></script>
+
 <!doctype html>
 <html lang="en">
   <head>
@@ -6,7 +8,7 @@
     <title>Google Sheets Data</title>
     <link rel="stylesheet" href="styles/style.css" />
   </head>
-  <body>
+  <body onload="handleClientLoad()">
     <div class="container">
       <h1>Data from Google Sheets</h1>
       <button id="fetchButton">Fetch Data</button>
