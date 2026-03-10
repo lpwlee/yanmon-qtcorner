@@ -1,7 +1,7 @@
 document.getElementById("fetchButton").addEventListener("click", function () {
   fetch(
     "https://script.google.com/macros/s/AKfycbzwlYqKuizZjaQfvJzeYEIrl35W_XFoixxIV8WoX0Z2P2hi0_y1OfbsXp8kZUyn6DHV/exec",
-  ) // Replace with your Google Apps Script URL
+  )
     .then((response) => response.json())
     .then((data) => {
       const dataDisplay = document.getElementById("dataDisplay");
@@ -12,10 +12,22 @@ document.getElementById("fetchButton").addEventListener("click", function () {
         return;
       }
 
-      data.forEach((row) => {
-        const rowDiv = document.createElement("div");
-        rowDiv.textContent = row.join(", "); // Join columns with a comma
-        dataDisplay.appendChild(rowDiv);
+      // Display headers if they exist
+      if (data[0] && data[0].length > 0) {
+        const headerDiv = document.createElement("div");
+        headerDiv.textContent = data[0].join(", "); // Join columns with a comma for headers
+        dataDisplay.appendChild(headerDiv);
+      }
+
+      // Display the data rows
+      data.slice(1).forEach((row) => {
+        // Skip the header row
+        if (row.length > 0) {
+          // Only process non-empty rows
+          const rowDiv = document.createElement("div");
+          rowDiv.textContent = row.join(", "); // Join columns with a comma
+          dataDisplay.appendChild(rowDiv);
+        }
       });
     })
     .catch((error) => {
