@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>殷望 - 靈修小角</title>
     
-    <!-- External libraries - order matters! -->
+    <!-- External libraries -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://apis.google.com/js/api.js"></script>
@@ -15,9 +15,9 @@
   </head>
   <body>
     <div class="container">
-      <!-- Image Banner (No Link) -->
+      <!-- Image Banner -->
       <div class="image-banner">
-        <img src="https://raw.githubusercontent.com/lpwlee/yanmon-qtcorner/refs/heads/main/images/QuietTime-Banner.jpg" 
+        <img src="images/banner.jpg" 
              alt="殷望 - 靈修小角 Banner" 
              class="banner-image">
       </div>
@@ -27,6 +27,15 @@
       <div class="calendar-container">
         <input type="text" id="datePicker" class="date-input" placeholder="選擇日期" />
         <button id="fetchButton" class="fetch-button">📅 載入靈修</button>
+      </div>
+      
+      <!-- Font Size Controls -->
+      <div class="font-size-controls">
+        <span class="font-size-label">字體大小：</span>
+        <button id="decreaseFont" class="font-btn" title="縮小字體">A−</button>
+        <span id="fontSizeDisplay" class="font-size-display">100%</span>
+        <button id="increaseFont" class="font-btn" title="放大字體">A+</button>
+        <button id="resetFont" class="font-btn reset-btn" title="重設字體">↺</button>
       </div>
       
       <div id="dataDisplay" class="data-display">

@@ -196,3 +196,98 @@ function updateSigninStatus(isSignedIn) {
         console.log("Signed in to Google");
     }
 }
+
+// Add this at the end of your script.js file
+
+// Font size control functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize font size controls
+    initFontSizeControls();
+});
+
+function initFontSizeControls() {
+    const dataDisplay = document.getElementById('dataDisplay');
+    const decreaseBtn = document.getElementById('decreaseFont');
+    const increaseBtn = document.getElementById('increaseFont');
+    const resetBtn = document.getElementById('resetFont');
+    const fontSizeDisplay = document.getElementById('fontSizeDisplay');
+    
+    // Default font size (in percent)
+    let currentFontSize = 100;
+    const minFontSize = 70;
+    const maxFontSize = 200;
+    const step = 10;
+    
+    // Apply font size to data display and all its children
+    function applyFontSize(size) {
+        // Store the size as a CSS variable
+        dataDisplay.style.setProperty('--content-font-size', size + '%');
+        
+        // Apply to all devotional content
+        const devotionalElements = dataDisplay.querySelectorAll(
+            '.devotional-title, .devotional-chapter, .devotional-content, .devotional-thinking, .thinking-text'
+        );
+        
+        devotionalElements.forEach(element => {
+            element.style.fontSize = size + '%';
+        });
+        
+        // Also apply to any paragraphs or text elements that might be added
+        const allTextElements = dataDisplay.querySelectorAll('p, div, span');
+        allTextElements.forEach(element => {
+            if (element.className.includes('devotional-') || 
+                element.className.includes('thinking-') ||
+                element.classList.contains('devotional-card')) {
+                element.style.fontSize = size + '%';
+            }
+        });
+        
+        // Update display
+        fontSizeDisplay.textContent = size + '%';
+        
+        // Save preference to localStorage
+        localStorage.setItem('preferredFontSize', size);
+    }
+    
+    // Increase font size
+    increaseBtn.addEventListener('click', function() {
+        if (currentFontSize < maxFontSize) {
+            currentFontSize += step;
+            applyFontSize(currentFontSize);
+        }
+    });
+    
+    // Decrease font size
+    decreaseBtn.addEventListener('click', function() {
+        if (currentFontSize > minFontSize) {
+            currentFontSize -= step;
+            applyFontSize(currentFontSize);
+        }
+    });
+    
+    // Reset font size
+    resetBtn.addEventListener('click', function() {
+        currentFontSize = 100;
+        applyFontSize(currentFontSize);
+    });
+    
+    // Load saved preference
+    const savedSize = localStorage.getItem('preferredFontSize');
+    if (savedSize) {
+        currentFontSize = parseInt(savedSize);
+        applyFontSize(currentFontSize);
+    }
+    
+    // Override the displayDevotionalData function to ensure new content gets the current font size
+    const originalDisplayDevotionalData = window.displayDevotionalData;
+    if (originalDisplayDevotionalData) {
+        window.displayDevotionalData = function(response, displayDate) {
+            // Call the original function
+            originalDisplayDevotionalData(response, displayDate);
+            // Apply current font size to new content
+            setTimeout(() => {
+                applyFontSize(currentFontSize);
+            }, 50); // Small delay to ensure DOM is updated
+        };
+    }
+}

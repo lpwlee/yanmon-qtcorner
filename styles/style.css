@@ -398,3 +398,81 @@ h1 {
         border-radius: 8px;
     }
 }
+
+/* Font Size Controls */
+.font-size-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding: 10px 15px;
+    background-color: #1e1e1e;
+    border-radius: 8px;
+    border: 1px solid #404040;
+    flex-wrap: wrap;
+}
+
+.font-size-label {
+    color: #bb86fc;
+    font-size: 14px;
+    margin-right: 5px;
+}
+
+.font-btn {
+    background-color: #2d2d2d;
+    color: #e0e0e0;
+    border: 1px solid #404040;
+    border-radius: 5px;
+    padding: 6px 12px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 40px;
+}
+
+.font-btn:hover {
+    background-color: #404040;
+    border-color: #bb86fc;
+    color: #bb86fc;
+    transform: translateY(-1px);
+}
+
+.font-btn:active {
+    transform: translateY(0);
+}
+
+.font-size-display {
+    color: #03dac6;
+    font-size: 14px;
+    font-weight: bold;
+    min-width: 50px;
+    text-align: center;
+    padding: 0 5px;
+}
+
+.reset-btn {
+    background-color: #332940;
+    border-color: #bb86fc;
+    color: #bb86fc;
+    font-size: 18px;
+    padding: 6px 12px;
+}
+
+.reset-btn:hover {
+    background-color: #bb86fc;
+    color: #121212;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .font-size-controls {
+        justify-content: center;
+    }
+    
+    .font-btn {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+}
