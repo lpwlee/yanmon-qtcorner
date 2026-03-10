@@ -19,12 +19,15 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById("fetchButton").addEventListener("click", fetchDevotionalForDate);
 });
 
-// Format date to match the format in your sheet (e.g., "3月10日")
+// Format date to match the format in your sheet (actual value is "2026/3/6", display is "3月6日")
 function formatDateToSheetFormat(dateStr) {
     const date = new Date(dateStr);
     const year = date.getFullYear();
     const month = date.getMonth() + 1; // JavaScript months are 0-based
     const day = date.getDate();
+    
+    // Return in the format that matches the actual cell value (YYYY/M/D)
+    // This is what the Google Sheets API will use for comparison
     return `${year}/${month}/${day}`;
 }
 
