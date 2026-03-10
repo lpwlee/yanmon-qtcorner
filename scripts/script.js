@@ -18,7 +18,14 @@ const CONFIG = {
     // Sheet configuration
     SHEET: {
         ID: "1boe5G7SQAkVQqzkokAkT3kjjObDckiUhxQ4d1mLZEqA",
-        RANGE: "Sheet1!A1:E366"
+        RANGE: "Sheet1!A1:E366",
+        COLUMNS: {
+            DATE: 0,        // Column A (index 0)
+            TITLE: 1,       // Column B (index 1)
+            BIBLE: 2,       // Column C (index 2)
+            AUTHOR: 3,      // Column D (index 3)
+            CATEGORY: 4     // Column E (index 4)
+        }
     },
     
     // UI Text
@@ -27,6 +34,8 @@ const CONFIG = {
         NO_DATE: "Please select a date first",
         NO_TITLE: "No title",
         NO_VERSE: "No verse",
+        NO_AUTHOR: "Unknown author",
+        NO_CATEGORY: "Uncategorized",
         ERROR_PREFIX: "❌",
         FETCH_ERROR: "Error fetching data"
     }
@@ -85,8 +94,8 @@ function fetchDevotionalForDate() {
     const displayDate = formatDateForDisplay(selectedDate);
     
     console.log("Selected date (raw):", selectedDate);
-    console.log("Sending to API (YYYY/MM/DD):", formattedDate); // Should be "2026/03/09"
-    console.log("Display format (M月D日):", displayDate); // Should be "3月9日"
+    console.log("Sending to API (YYYY/MM/DD):", formattedDate);
+    console.log("Display format (M月D日):", displayDate);
     
     // Show loading state
     const dataDisplay = document.getElementById("dataDisplay");
@@ -132,23 +141,39 @@ function displayDevotionalData(response, displayDate) {
     const cardDiv = document.createElement("div");
     cardDiv.className = "devotional-card";
     
-    // Add date - use the display format we created earlier
+    // Add date
     const dateDiv = document.createElement("div");
     dateDiv.className = "devotional-date";
-    dateDiv.textContent = displayDate; // Use the display format (3月9日)
+    dateDiv.textContent = displayDate;
     cardDiv.appendChild(dateDiv);
     
-    // Add title
+    // Add category if available (Column E)
+    if (data.category) {
+        const categoryDiv = document.createElement("div");
+        categoryDiv.className = "devotional-category";
+        categoryDiv.textContent = `📌 ${data.category}`;
+        cardDiv.appendChild(categoryDiv);
+    }
+    
+    // Add title (Column B)
     const titleDiv = document.createElement("div");
     titleDiv.className = "devotional-title";
     titleDiv.textContent = data.title || CONFIG.TEXTS.NO_TITLE;
     cardDiv.appendChild(titleDiv);
     
-    // Add Bible verse
+    // Add Bible verse (Column C)
     const verseDiv = document.createElement("div");
     verseDiv.className = "devotional-verse";
     verseDiv.textContent = data.bible_chapter || CONFIG.TEXTS.NO_VERSE;
     cardDiv.appendChild(verseDiv);
+    
+    // Add author if available (Column D)
+    if (data.author) {
+        const authorDiv = document.createElement("div");
+        authorDiv.className = "devotional-author";
+        authorDiv.textContent = `✍️ ${data.author}`;
+        cardDiv.appendChild(authorDiv);
+    }
     
     dataDisplay.appendChild(cardDiv);
 }
