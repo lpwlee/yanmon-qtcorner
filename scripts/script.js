@@ -1,8 +1,7 @@
 // ==================== CONFIGURATION ====================
-// Update these values when needed
 const CONFIG = {
     // Google Apps Script URL
-    SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyUbW1npdbM9cup0vXu3LALj3CLlcfUgat3boXAWuRcsGuSGsPXYi6xYX6T8ClDWOG9/exec",
+    SCRIPT_URL: "https://script.google.com/macros/s/AKfycbw2cwlhsTivtCSiwWYK99N7zJBbP4XROOfH6wH3f-gm4Hwal4Clt_AX2OkGGS4ga_6n/exec",
     
     // Google API Configuration
     GOOGLE_API_KEY: "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",
@@ -10,9 +9,9 @@ const CONFIG = {
     
     // Date formats
     DATE_FORMAT: {
-        PICKER: "Y-m-d",           // Format for Flatpickr
-        API: "YYYY/MM/DD",          // Format sent to API (WITH leading zeros)
-        DISPLAY: "M月D日"            // Format shown to users
+        PICKER: "Y-m-d",
+        API: "YYYY/MM/DD",
+        DISPLAY: "M月D日"
     },
     
     // Sheet configuration
@@ -20,11 +19,11 @@ const CONFIG = {
         ID: "1boe5G7SQAkVQqzkokAkT3kjjObDckiUhxQ4d1mLZEqA",
         RANGE: "Sheet1!A1:E366",
         COLUMNS: {
-            DATE: 0,        // Column A (index 0)
-            TITLE: 1,       // Column B (index 1)
-            BIBLE: 2,       // Column C (index 2)
-            AUTHOR: 3,      // Column D (index 3)
-            CATEGORY: 4     // Column E (index 4)
+            DATE: 0,           // Column A
+            TITLE: 1,          // Column B
+            BIBLE_CHAPTER: 2,  // Column C
+            BIBLE_CONTENT: 3,  // Column D
+            THINKING: 4        // Column E
         }
     },
     
@@ -33,9 +32,9 @@ const CONFIG = {
         LOADING: "Loading devotional...",
         NO_DATE: "Please select a date first",
         NO_TITLE: "No title",
-        NO_VERSE: "No verse",
-        NO_AUTHOR: "Unknown author",
-        NO_CATEGORY: "Uncategorized",
+        NO_BIBLE_CHAPTER: "No Bible reference",
+        NO_BIBLE_CONTENT: "No Bible content",
+        NO_THINKING: "No reflection available",
         ERROR_PREFIX: "❌",
         FETCH_ERROR: "Error fetching data"
     }
@@ -44,35 +43,29 @@ const CONFIG = {
 
 // Initialize Flatpickr calendar when the page loads
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize date picker
     const today = new Date();
     
     flatpickr("#datePicker", {
         dateFormat: CONFIG.DATE_FORMAT.PICKER,
         defaultDate: today,
-        maxDate: today, // Can't select future dates
+        maxDate: today,
         monthSelectorType: "static",
         onChange: function(selectedDates, dateStr, instance) {
             console.log("Selected date:", dateStr);
         }
     });
     
-    // Add event listener to fetch button
     document.getElementById("fetchButton").addEventListener("click", fetchDevotionalForDate);
 });
 
-// Format date to match the format in your sheet (WITH leading zeros)
 function formatDateToSheetFormat(dateStr) {
     const date = new Date(dateStr);
     const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0'); // Add leading zero
-    const day = String(date.getDate()).padStart(2, '0'); // Add leading zero
-    
-    // Return in YYYY/MM/DD format (WITH leading zeros)
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
     return `${year}/${month}/${day}`;
 }
 
-// Format date for display (M月D日)
 function formatDateForDisplay(dateStr) {
     const date = new Date(dateStr);
     const month = date.getMonth() + 1;
@@ -80,7 +73,6 @@ function formatDateForDisplay(dateStr) {
     return `${month}月${day}日`;
 }
 
-// Fetch devotional for selected date
 function fetchDevotionalForDate() {
     const datePicker = document.getElementById("datePicker");
     const selectedDate = datePicker.value;
@@ -97,15 +89,12 @@ function fetchDevotionalForDate() {
     console.log("Sending to API (YYYY/MM/DD):", formattedDate);
     console.log("Display format (M月D日):", displayDate);
     
-    // Show loading state
     const dataDisplay = document.getElementById("dataDisplay");
     dataDisplay.innerHTML = `<div class="loading">${CONFIG.TEXTS.LOADING}</div>`;
     
-    // Disable button while fetching
     const fetchButton = document.getElementById("fetchButton");
     fetchButton.disabled = true;
     
-    // Construct the URL with date parameter
     const urlWithParam = `${CONFIG.SCRIPT_URL}?date=${encodeURIComponent(formattedDate)}`;
     
     console.log("Fetching URL:", urlWithParam);
@@ -125,10 +114,9 @@ function fetchDevotionalForDate() {
         });
 }
 
-// Display the devotional data
 function displayDevotionalData(response, displayDate) {
     const dataDisplay = document.getElementById("dataDisplay");
-    dataDisplay.innerHTML = ""; // Clear previous data
+    dataDisplay.innerHTML = "";
     
     if (!response.success) {
         dataDisplay.innerHTML = `<div class="error-message">${CONFIG.TEXTS.ERROR_PREFIX} ${response.message}</div>`;
@@ -137,48 +125,54 @@ function displayDevotionalData(response, displayDate) {
     
     const data = response.data;
     
-    // Create a nice card layout for the devotional
+    // Create devotional card
     const cardDiv = document.createElement("div");
     cardDiv.className = "devotional-card";
     
-    // Add date
+    // Date
     const dateDiv = document.createElement("div");
     dateDiv.className = "devotional-date";
     dateDiv.textContent = displayDate;
     cardDiv.appendChild(dateDiv);
     
-    // Add category if available (Column E)
-    if (data.category) {
-        const categoryDiv = document.createElement("div");
-        categoryDiv.className = "devotional-category";
-        categoryDiv.textContent = `📌 ${data.category}`;
-        cardDiv.appendChild(categoryDiv);
-    }
-    
-    // Add title (Column B)
+    // Title
     const titleDiv = document.createElement("div");
     titleDiv.className = "devotional-title";
     titleDiv.textContent = data.title || CONFIG.TEXTS.NO_TITLE;
     cardDiv.appendChild(titleDiv);
     
-    // Add Bible verse (Column C)
-    const verseDiv = document.createElement("div");
-    verseDiv.className = "devotional-verse";
-    verseDiv.textContent = data.bible_chapter || CONFIG.TEXTS.NO_VERSE;
-    cardDiv.appendChild(verseDiv);
+    // Bible Chapter
+    const chapterDiv = document.createElement("div");
+    chapterDiv.className = "devotional-chapter";
+    chapterDiv.textContent = data.bible_chapter || CONFIG.TEXTS.NO_BIBLE_CHAPTER;
+    cardDiv.appendChild(chapterDiv);
     
-    // Add author if available (Column D)
-    if (data.author) {
-        const authorDiv = document.createElement("div");
-        authorDiv.className = "devotional-author";
-        authorDiv.textContent = `✍️ ${data.author}`;
-        cardDiv.appendChild(authorDiv);
-    }
+    // Bible Content
+    const contentDiv = document.createElement("div");
+    contentDiv.className = "devotional-content";
+    contentDiv.textContent = data.bible_content || CONFIG.TEXTS.NO_BIBLE_CONTENT;
+    cardDiv.appendChild(contentDiv);
+    
+    // Thinking/Reflection
+    const thinkingDiv = document.createElement("div");
+    thinkingDiv.className = "devotional-thinking";
+    
+    const thinkingLabel = document.createElement("div");
+    thinkingLabel.className = "thinking-label";
+    thinkingLabel.textContent = "💭 反思與應用";
+    thinkingDiv.appendChild(thinkingLabel);
+    
+    const thinkingText = document.createElement("div");
+    thinkingText.className = "thinking-text";
+    thinkingText.textContent = data.thinking || CONFIG.TEXTS.NO_THINKING;
+    thinkingDiv.appendChild(thinkingText);
+    
+    cardDiv.appendChild(thinkingDiv);
     
     dataDisplay.appendChild(cardDiv);
 }
 
-// Keep the existing Google API functions
+// Google API functions (kept for compatibility)
 function handleClientLoad() {
     gapi.load("client:auth2", initClient);
 }
