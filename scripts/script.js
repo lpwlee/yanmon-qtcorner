@@ -1,6 +1,6 @@
 document.getElementById("fetchButton").addEventListener("click", function () {
   fetch(
-    "https://script.google.com/macros/s/AKfycbyBvORJVXzmnmYHx3otb4DpZYe62jxlt6vau9JqiXnjuRMcU_KDpTfSCRRuch2sYqej/exec",
+    "https://script.google.com/macros/s/AKfycbwX_NmCfJTIniqUerPvYCQjT1razA1ga5wrzhRo2vZIfiAyibGsHacVpMmSbchVuwrq/exec",
   ) // Replace with your Google Apps Script URL
     .then((response) => response.json())
     .then((data) => {
