@@ -1,10 +1,45 @@
+// ==================== CONFIGURATION ====================
+// Update these values when needed
+const CONFIG = {
+    // Google Apps Script URL
+    SCRIPT_URL: "https://script.google.com/macros/s/AKfycbz9T784H2pkKRDj1hPTiOVxsi0rF6cQGucdjfKWAR3HBnppKIRUWbSUJPA4fZwPBB70/exec",
+    
+    // Google API Configuration
+    GOOGLE_API_KEY: "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",
+    GOOGLE_CLIENT_ID: "175179802624-jn015u8b1ecjb62c6b05u91btu9ts325.apps.googleusercontent.com",
+    
+    // Date formats
+    DATE_FORMAT: {
+        PICKER: "Y-m-d",           // Format for Flatpickr
+        API: "YYYY/M/D",            // Format sent to API (no leading zeros)
+        DISPLAY: "M月D日"            // Format shown to users
+    },
+    
+    // Sheet configuration
+    SHEET: {
+        ID: "1boe5G7SQAkVQqzkokAkT3kjjObDckiUhxQ4d1mLZEqA",
+        RANGE: "Sheet1!A1:C10"
+    },
+    
+    // UI Text
+    TEXTS: {
+        LOADING: "Loading devotional...",
+        NO_DATE: "Please select a date first",
+        NO_TITLE: "No title",
+        NO_VERSE: "No verse",
+        ERROR_PREFIX: "❌",
+        FETCH_ERROR: "Error fetching data"
+    }
+};
+// =======================================================
+
 // Initialize Flatpickr calendar when the page loads
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize date picker
     const today = new Date();
     
     flatpickr("#datePicker", {
-        dateFormat: "Y-m-d",
+        dateFormat: CONFIG.DATE_FORMAT.PICKER,
         defaultDate: today,
         maxDate: today, // Can't select future dates
         monthSelectorType: "static",
@@ -42,7 +77,7 @@ function fetchDevotionalForDate() {
     const selectedDate = datePicker.value;
     
     if (!selectedDate) {
-        alert("Please select a date first");
+        alert(CONFIG.TEXTS.NO_DATE);
         return;
     }
     
@@ -50,20 +85,19 @@ function fetchDevotionalForDate() {
     const displayDate = formatDateForDisplay(selectedDate);
     
     console.log("Selected date (raw):", selectedDate);
-    console.log("Sending to API (YYYY/M/D):", formattedDate); // Should be "2026/3/9"
-    console.log("Display format (M月D日):", displayDate); // Should be "3月9日"
+    console.log("Sending to API (YYYY/M/D):", formattedDate);
+    console.log("Display format (M月D日):", displayDate);
     
     // Show loading state
     const dataDisplay = document.getElementById("dataDisplay");
-    dataDisplay.innerHTML = '<div class="loading">Loading devotional...</div>';
+    dataDisplay.innerHTML = `<div class="loading">${CONFIG.TEXTS.LOADING}</div>`;
     
     // Disable button while fetching
     const fetchButton = document.getElementById("fetchButton");
     fetchButton.disabled = true;
     
     // Construct the URL with date parameter
-    const scriptURL = "https://script.google.com/macros/s/AKfycbzl2A929u7gXOCj3patlyyTnQVsnuv7SzxvWH7-XC3Uqxzu9v6a9tZPR1270Dn4_ey5/exec";
-    const urlWithParam = `${scriptURL}?date=${encodeURIComponent(formattedDate)}`;
+    const urlWithParam = `${CONFIG.SCRIPT_URL}?date=${encodeURIComponent(formattedDate)}`;
     
     console.log("Fetching URL:", urlWithParam);
     
@@ -75,7 +109,7 @@ function fetchDevotionalForDate() {
         })
         .catch(error => {
             console.error("Error fetching data:", error);
-            dataDisplay.innerHTML = `<div class="error-message">Error fetching data: ${error.message}</div>`;
+            dataDisplay.innerHTML = `<div class="error-message">${CONFIG.TEXTS.ERROR_PREFIX} ${CONFIG.TEXTS.FETCH_ERROR}: ${error.message}</div>`;
         })
         .finally(() => {
             fetchButton.disabled = false;
@@ -88,7 +122,7 @@ function displayDevotionalData(response, displayDate) {
     dataDisplay.innerHTML = ""; // Clear previous data
     
     if (!response.success) {
-        dataDisplay.innerHTML = `<div class="error-message">❌ ${response.message}</div>`;
+        dataDisplay.innerHTML = `<div class="error-message">${CONFIG.TEXTS.ERROR_PREFIX} ${response.message}</div>`;
         return;
     }
     
@@ -107,13 +141,13 @@ function displayDevotionalData(response, displayDate) {
     // Add title
     const titleDiv = document.createElement("div");
     titleDiv.className = "devotional-title";
-    titleDiv.textContent = data.title || "No title";
+    titleDiv.textContent = data.title || CONFIG.TEXTS.NO_TITLE;
     cardDiv.appendChild(titleDiv);
     
     // Add Bible verse
     const verseDiv = document.createElement("div");
     verseDiv.className = "devotional-verse";
-    verseDiv.textContent = data.bible_chapter || "No verse";
+    verseDiv.textContent = data.bible_chapter || CONFIG.TEXTS.NO_VERSE;
     cardDiv.appendChild(verseDiv);
     
     dataDisplay.appendChild(cardDiv);
@@ -127,8 +161,8 @@ function handleClientLoad() {
 function initClient() {
     gapi.client
         .init({
-            apiKey: "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",
-            clientId: "175179802624-jn015u8b1ecjb62c6b05u91btu9ts325.apps.googleusercontent.com",
+            apiKey: CONFIG.GOOGLE_API_KEY,
+            clientId: CONFIG.GOOGLE_CLIENT_ID,
             discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"],
             scope: "https://www.googleapis.com/auth/spreadsheets.readonly",
         })
