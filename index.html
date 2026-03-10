@@ -1,20 +1,25 @@
-<script src="https://apis.google.com/js/api.js"></script>
-
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Google Sheets Data</title>
-    <link rel="stylesheet" href="styles/style.css" />
+    <title>Fetch Google Sheets Data</title>
+    <script src="https://apis.google.com/js/api.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+      }
+      #dataDisplay {
+        margin-top: 20px;
+      }
+    </style>
   </head>
-  <body onload="handleClientLoad()">
-    <div class="container">
-      <h1>Data from Google Sheets</h1>
-      <button id="fetchButton">Fetch Data</button>
-      <div id="dataDisplay" class="data-display"></div>
-    </div>
+  <body>
+    <h1>Google Sheets Data Fetcher</h1>
+    <button id="fetchButton">Fetch Data</button>
+    <div id="dataDisplay"></div>
 
-    <script src="scripts/script.js"></script>
+    <script src="script.js"></script>
   </body>
 </html>

@@ -1,9 +1,16 @@
 document.getElementById("fetchButton").addEventListener("click", function () {
-  fetch("YOUR_APPS_SCRIPT_URL") // Replace with your Google Apps Script URL
+  fetch(
+    "https://script.google.com/macros/s/AKfycbyBvORJVXzmnmYHx3otb4DpZYe62jxlt6vau9JqiXnjuRMcU_KDpTfSCRRuch2sYqej/exec",
+  ) // Replace with your Google Apps Script URL
     .then((response) => response.json())
     .then((data) => {
       const dataDisplay = document.getElementById("dataDisplay");
       dataDisplay.innerHTML = ""; // Clear previous data
+
+      if (data.length === 0) {
+        dataDisplay.textContent = "No data found.";
+        return;
+      }
 
       data.forEach((row) => {
         const rowDiv = document.createElement("div");
@@ -28,7 +35,7 @@ function initClient() {
     .init({
       apiKey: "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", // Replace with your API key
       clientId:
-        "175179802624-jn015u8b1ecjb62c6b05u91btu9ts325.apps.googleusercontent.com", // Replace with your client ID
+        "175179802624-jn015u8b1ecjb62c6b05u91btu9ts325.apps.googleusercontent.com", // Replace with your Client ID
       discoveryDocs: [
         "https://sheets.googleapis.com/$discovery/rest?version=v4",
       ],
@@ -37,7 +44,6 @@ function initClient() {
     .then(function () {
       // Listen for sign-in state changes
       gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
-
       // Handle the initial sign-in state
       updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
     });
@@ -66,6 +72,7 @@ function fetchData() {
           displayData(range.values);
         } else {
           console.log("No data found.");
+          document.getElementById("dataDisplay").textContent = "No data found.";
         }
       },
       function (response) {
@@ -81,7 +88,7 @@ function displayData(data) {
 
   data.forEach((row) => {
     const rowDiv = document.createElement("div");
-    rowDiv.textContent = row.join(", ");
+    rowDiv.textContent = row.join(", "); // Join columns with a comma
     dataDisplay.appendChild(rowDiv);
   });
 }
