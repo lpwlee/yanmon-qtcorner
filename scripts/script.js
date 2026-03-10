@@ -2,7 +2,7 @@
 // Update these values when needed
 const CONFIG = {
     // Google Apps Script URL
-    SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzi4hOQw5H65sMOqH7O9jA4mOBYdQxTxQy5JO9seqbeayJ_he3lpbvET74lVagM8PcM/exec",
+    SCRIPT_URL: "https://script.google.com/macros/s/AKfycbyUbW1npdbM9cup0vXu3LALj3CLlcfUgat3boXAWuRcsGuSGsPXYi6xYX6T8ClDWOG9/exec",
     
     // Google API Configuration
     GOOGLE_API_KEY: "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",
@@ -18,7 +18,7 @@ const CONFIG = {
     // Sheet configuration
     SHEET: {
         ID: "1boe5G7SQAkVQqzkokAkT3kjjObDckiUhxQ4d1mLZEqA",
-        RANGE: "Sheet1!A1:C10"
+        RANGE: "Sheet1!A1:E366"
     },
     
     // UI Text
