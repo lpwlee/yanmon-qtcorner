@@ -2,8 +2,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize date picker
     const today = new Date();
-    const currentMonth = today.getMonth();
-    const currentYear = today.getFullYear();
     
     flatpickr("#datePicker", {
         dateFormat: "Y-m-d",
@@ -19,16 +17,23 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById("fetchButton").addEventListener("click", fetchDevotionalForDate);
 });
 
-// Format date to match the format in your sheet (actual value is "2026/3/6", display is "3月6日")
+// Format date to match the format in your sheet (actual value is "2026/3/6")
 function formatDateToSheetFormat(dateStr) {
     const date = new Date(dateStr);
     const year = date.getFullYear();
     const month = date.getMonth() + 1; // JavaScript months are 0-based
     const day = date.getDate();
     
-    // Return in the format that matches the actual cell value (YYYY/M/D)
-    // This is what the Google Sheets API will use for comparison
+    // Return in YYYY/M/D format (no leading zeros)
     return `${year}/${month}/${day}`;
+}
+
+// Format date for display (M月D日)
+function formatDateForDisplay(dateStr) {
+    const date = new Date(dateStr);
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    return `${month}月${day}日`;
 }
 
 // Fetch devotional for selected date
@@ -42,7 +47,11 @@ function fetchDevotionalForDate() {
     }
     
     const formattedDate = formatDateToSheetFormat(selectedDate);
-    console.log("Fetching devotional for:", formattedDate);
+    const displayDate = formatDateForDisplay(selectedDate);
+    
+    console.log("Selected date (raw):", selectedDate);
+    console.log("Sending to API (YYYY/M/D):", formattedDate); // Should be "2026/3/9"
+    console.log("Display format (M月D日):", displayDate); // Should be "3月9日"
     
     // Show loading state
     const dataDisplay = document.getElementById("dataDisplay");
@@ -56,10 +65,13 @@ function fetchDevotionalForDate() {
     const scriptURL = "https://script.google.com/macros/s/AKfycbzl2A929u7gXOCj3patlyyTnQVsnuv7SzxvWH7-XC3Uqxzu9v6a9tZPR1270Dn4_ey5/exec";
     const urlWithParam = `${scriptURL}?date=${encodeURIComponent(formattedDate)}`;
     
+    console.log("Fetching URL:", urlWithParam);
+    
     fetch(urlWithParam)
         .then(response => response.json())
         .then(data => {
-            displayDevotionalData(data);
+            console.log("Response received:", data);
+            displayDevotionalData(data, displayDate);
         })
         .catch(error => {
             console.error("Error fetching data:", error);
@@ -71,7 +83,7 @@ function fetchDevotionalForDate() {
 }
 
 // Display the devotional data
-function displayDevotionalData(response) {
+function displayDevotionalData(response, displayDate) {
     const dataDisplay = document.getElementById("dataDisplay");
     dataDisplay.innerHTML = ""; // Clear previous data
     
@@ -86,22 +98,22 @@ function displayDevotionalData(response) {
     const cardDiv = document.createElement("div");
     cardDiv.className = "devotional-card";
     
-    // Add date
+    // Add date - use the display format we created earlier
     const dateDiv = document.createElement("div");
     dateDiv.className = "devotional-date";
-    dateDiv.textContent = data.date;
+    dateDiv.textContent = displayDate; // Use the display format (3月9日)
     cardDiv.appendChild(dateDiv);
     
     // Add title
     const titleDiv = document.createElement("div");
     titleDiv.className = "devotional-title";
-    titleDiv.textContent = data.title;
+    titleDiv.textContent = data.title || "No title";
     cardDiv.appendChild(titleDiv);
     
     // Add Bible verse
     const verseDiv = document.createElement("div");
     verseDiv.className = "devotional-verse";
-    verseDiv.textContent = data.bible_chapter;
+    verseDiv.textContent = data.bible_chapter || "No verse";
     cardDiv.appendChild(verseDiv);
     
     dataDisplay.appendChild(cardDiv);
@@ -129,12 +141,5 @@ function initClient() {
 function updateSigninStatus(isSignedIn) {
     if (isSignedIn) {
         console.log("Signed in to Google");
-        // Optional: You could auto-fetch today's devotional when signed in
-        // fetchDevotionalForDate();
     }
 }
-
-// Note: The original fetch button event listener and displayData function
-// have been replaced by the new devotional-specific functions above.
-// If you need to keep the original functionality for any reason,
-// you can add it back here.
