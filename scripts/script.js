@@ -22,9 +22,10 @@ document.addEventListener('DOMContentLoaded', function() {
 // Format date to match the format in your sheet (e.g., "3月10日")
 function formatDateToSheetFormat(dateStr) {
     const date = new Date(dateStr);
+    const year = date.getFullYear();
     const month = date.getMonth() + 1; // JavaScript months are 0-based
     const day = date.getDate();
-    return `${month}月${day}日`;
+    return `${year}/${month}/${day}`;
 }
 
 // Fetch devotional for selected date
