@@ -3,22 +3,29 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Fetch Google Sheets Data</title>
+    <title>Daily Devotional Reader</title>
+    
+    <!-- External libraries -->
     <script src="https://apis.google.com/js/api.js"></script>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        margin: 20px;
-      }
-      #dataDisplay {
-        margin-top: 20px;
-      }
-    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles/style.css">
   </head>
   <body>
-    <h1>Google Sheets Data Fetcher</h1>
-    <button id="fetchButton">Fetch Data</button>
-    <div id="dataDisplay"></div>
+    <div class="container">
+      <h1>📖 Daily Devotional Reader</h1>
+      
+      <div class="calendar-container">
+        <input type="text" id="datePicker" class="date-input" placeholder="Select a date" />
+        <button id="fetchButton" class="fetch-button">📅 Get Devotional for Selected Date</button>
+      </div>
+      
+      <div id="dataDisplay" class="data-display">
+        <div class="no-data">Select a date and click the button to view the devotional</div>
+      </div>
+    </div>
 
     <script src="scripts/script.js"></script>
   </body>

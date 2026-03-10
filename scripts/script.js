@@ -1,106 +1,130 @@
-document.getElementById("fetchButton").addEventListener("click", function () {
-  fetch(
-    "https://script.google.com/macros/s/AKfycbzwlYqKuizZjaQfvJzeYEIrl35W_XFoixxIV8WoX0Z2P2hi0_y1OfbsXp8kZUyn6DHV/exec",
-  )
-    .then((response) => response.json())
-    .then((data) => {
-      const dataDisplay = document.getElementById("dataDisplay");
-      dataDisplay.innerHTML = ""; // Clear previous data
-
-      if (data.length === 0) {
-        dataDisplay.textContent = "No data found.";
-        return;
-      }
-
-      // Display headers if they exist
-      if (data[0] && data[0].length > 0) {
-        const headerDiv = document.createElement("div");
-        headerDiv.textContent = data[0].join(", "); // Join columns with a comma for headers
-        dataDisplay.appendChild(headerDiv);
-      }
-
-      // Display the data rows
-      data.slice(1).forEach((row) => {
-        // Skip the header row
-        if (row.length > 0) {
-          // Only process non-empty rows
-          const rowDiv = document.createElement("div");
-          rowDiv.textContent = row.join(", "); // Join columns with a comma
-          dataDisplay.appendChild(rowDiv);
+// Initialize Flatpickr calendar when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize date picker
+    const today = new Date();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
+    
+    flatpickr("#datePicker", {
+        dateFormat: "Y-m-d",
+        defaultDate: today,
+        maxDate: today, // Can't select future dates
+        monthSelectorType: "static",
+        onChange: function(selectedDates, dateStr, instance) {
+            console.log("Selected date:", dateStr);
         }
-      });
-    })
-    .catch((error) => {
-      console.error("Error fetching data:", error);
-      alert("Error fetching data. Check the console for details.");
     });
+    
+    // Add event listener to fetch button
+    document.getElementById("fetchButton").addEventListener("click", fetchDevotionalForDate);
 });
 
-// Load the API client and auth2 library
+// Format date to match the format in your sheet (e.g., "3月10日")
+function formatDateToSheetFormat(dateStr) {
+    const date = new Date(dateStr);
+    const month = date.getMonth() + 1; // JavaScript months are 0-based
+    const day = date.getDate();
+    return `${month}月${day}日`;
+}
+
+// Fetch devotional for selected date
+function fetchDevotionalForDate() {
+    const datePicker = document.getElementById("datePicker");
+    const selectedDate = datePicker.value;
+    
+    if (!selectedDate) {
+        alert("Please select a date first");
+        return;
+    }
+    
+    const formattedDate = formatDateToSheetFormat(selectedDate);
+    console.log("Fetching devotional for:", formattedDate);
+    
+    // Show loading state
+    const dataDisplay = document.getElementById("dataDisplay");
+    dataDisplay.innerHTML = '<div class="loading">Loading devotional...</div>';
+    
+    // Disable button while fetching
+    const fetchButton = document.getElementById("fetchButton");
+    fetchButton.disabled = true;
+    
+    // Construct the URL with date parameter
+    const scriptURL = "https://script.google.com/macros/s/AKfycbzl2A929u7gXOCj3patlyyTnQVsnuv7SzxvWH7-XC3Uqxzu9v6a9tZPR1270Dn4_ey5/exec";
+    const urlWithParam = `${scriptURL}?date=${encodeURIComponent(formattedDate)}`;
+    
+    fetch(urlWithParam)
+        .then(response => response.json())
+        .then(data => {
+            displayDevotionalData(data);
+        })
+        .catch(error => {
+            console.error("Error fetching data:", error);
+            dataDisplay.innerHTML = `<div class="error-message">Error fetching data: ${error.message}</div>`;
+        })
+        .finally(() => {
+            fetchButton.disabled = false;
+        });
+}
+
+// Display the devotional data
+function displayDevotionalData(response) {
+    const dataDisplay = document.getElementById("dataDisplay");
+    dataDisplay.innerHTML = ""; // Clear previous data
+    
+    if (!response.success) {
+        dataDisplay.innerHTML = `<div class="error-message">❌ ${response.message}</div>`;
+        return;
+    }
+    
+    const data = response.data;
+    
+    // Create a nice card layout for the devotional
+    const cardDiv = document.createElement("div");
+    cardDiv.className = "devotional-card";
+    
+    // Add date
+    const dateDiv = document.createElement("div");
+    dateDiv.className = "devotional-date";
+    dateDiv.textContent = data.date;
+    cardDiv.appendChild(dateDiv);
+    
+    // Add title
+    const titleDiv = document.createElement("div");
+    titleDiv.className = "devotional-title";
+    titleDiv.textContent = data.title;
+    cardDiv.appendChild(titleDiv);
+    
+    // Add Bible verse
+    const verseDiv = document.createElement("div");
+    verseDiv.className = "devotional-verse";
+    verseDiv.textContent = data.bible_chapter;
+    cardDiv.appendChild(verseDiv);
+    
+    dataDisplay.appendChild(cardDiv);
+}
+
+// Keep the existing Google API functions if you still need them
 function handleClientLoad() {
-  gapi.load("client:auth2", initClient);
+    gapi.load("client:auth2", initClient);
 }
 
-// Initialize the API client and set up sign in
 function initClient() {
-  gapi.client
-    .init({
-      apiKey: "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", // Replace with your API key
-      clientId:
-        "175179802624-jn015u8b1ecjb62c6b05u91btu9ts325.apps.googleusercontent.com", // Replace with your Client ID
-      discoveryDocs: [
-        "https://sheets.googleapis.com/$discovery/rest?version=v4",
-      ],
-      scope: "https://www.googleapis.com/auth/spreadsheets.readonly",
-    })
-    .then(function () {
-      // Listen for sign-in state changes
-      gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
-      // Handle the initial sign-in state
-      updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
-    });
+    gapi.client
+        .init({
+            apiKey: "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",
+            clientId: "175179802624-jn015u8b1ecjb62c6b05u91btu9ts325.apps.googleusercontent.com",
+            discoveryDocs: ["https://sheets.googleapis.com/$discovery/rest?version=v4"],
+            scope: "https://www.googleapis.com/auth/spreadsheets.readonly",
+        })
+        .then(function () {
+            gapi.auth2.getAuthInstance().isSignedIn.listen(updateSigninStatus);
+            updateSigninStatus(gapi.auth2.getAuthInstance().isSignedIn.get());
+        });
 }
 
-// Handle sign-in state changes
 function updateSigninStatus(isSignedIn) {
-  if (isSignedIn) {
-    fetchData();
-  } else {
-    gapi.auth2.getAuthInstance().signIn();
-  }
-}
-
-// Fetch data from Google Sheets
-function fetchData() {
-  gapi.client.sheets.spreadsheets.values
-    .get({
-      spreadsheetId: "1boe5G7SQAkVQqzkokAkT3kjjObDckiUhxQ4d1mLZEqA", // Replace with your Sheet ID
-      range: "Sheet1!A1:C10", // Adjust your range here
-    })
-    .then(
-      function (response) {
-        const range = response.result;
-        if (range.values.length > 0) {
-          displayData(range.values);
-        } else {
-          console.log("No data found.");
-          document.getElementById("dataDisplay").textContent = "No data found.";
-        }
-      },
-      function (response) {
-        console.error("Error: " + response.result.error.message);
-      },
-    );
-}
-
-// Display the fetched data
-function displayData(data) {
-  const dataDisplay = document.getElementById("dataDisplay");
-  dataDisplay.innerHTML = ""; // Clear previous data
-
-  data.forEach((row) => {
-    const rowDiv = document.createElement("div");
-    rowDiv.textContent = row.join(", "); // Join columns with a comma
-    dataDisplay.appendChild(rowDiv);
-  });
+    if (isSignedIn) {
+        // You can still use this for other functionality if needed
+        console.log("Signed in to Google");
+    }
 }
