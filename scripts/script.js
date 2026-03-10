@@ -103,7 +103,7 @@ function displayDevotionalData(response) {
     dataDisplay.appendChild(cardDiv);
 }
 
-// Keep the existing Google API functions if you still need them
+// Keep the existing Google API functions
 function handleClientLoad() {
     gapi.load("client:auth2", initClient);
 }
@@ -124,7 +124,13 @@ function initClient() {
 
 function updateSigninStatus(isSignedIn) {
     if (isSignedIn) {
-        // You can still use this for other functionality if needed
         console.log("Signed in to Google");
+        // Optional: You could auto-fetch today's devotional when signed in
+        // fetchDevotionalForDate();
     }
 }
+
+// Note: The original fetch button event listener and displayData function
+// have been replaced by the new devotional-specific functions above.
+// If you need to keep the original functionality for any reason,
+// you can add it back here.
