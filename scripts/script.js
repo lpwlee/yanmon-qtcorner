@@ -26,8 +26,9 @@ function handleClientLoad() {
 function initClient() {
   gapi.client
     .init({
-      apiKey: "YOUR_API_KEY", // Replace with your API key
-      clientId: "YOUR_CLIENT_ID", // Replace with your client ID
+      apiKey: "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", // Replace with your API key
+      clientId:
+        "175179802624-jn015u8b1ecjb62c6b05u91btu9ts325.apps.googleusercontent.com", // Replace with your client ID
       discoveryDocs: [
         "https://sheets.googleapis.com/$discovery/rest?version=v4",
       ],
