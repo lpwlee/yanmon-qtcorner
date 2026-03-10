@@ -1,7 +1,7 @@
 // ==================== CONFIGURATION ====================
 const CONFIG = {
     // Google Apps Script URL
-    SCRIPT_URL: "https://script.google.com/macros/s/AKfycbw2cwlhsTivtCSiwWYK99N7zJBbP4XROOfH6wH3f-gm4Hwal4Clt_AX2OkGGS4ga_6n/exec",
+    SCRIPT_URL: "https://script.google.com/macros/s/AKfycbzSwX_v1yJuNDfbQWHKffGMFSDQO7KuIKxxof8vHvxRbU7ikDCkAA0nt_SvD0Ost4pU/exec",
     
     // Google API Configuration
     GOOGLE_API_KEY: "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",
