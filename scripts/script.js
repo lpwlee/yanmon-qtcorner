@@ -41,11 +41,14 @@ const CONFIG = {
 };
 // =======================================================
 
+// Store flatpickr instance globally
+let flatpickrInstance = null;
+
 // Initialize Flatpickr calendar when the page loads
 document.addEventListener('DOMContentLoaded', function() {
     const today = new Date();
     
-    flatpickr("#datePicker", {
+    flatpickrInstance = flatpickr("#datePicker", {
         dateFormat: CONFIG.DATE_FORMAT.PICKER,
         defaultDate: today,
         maxDate: today,
@@ -56,7 +59,107 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     document.getElementById("fetchButton").addEventListener("click", fetchDevotionalForDate);
+    
+    // Setup navigation buttons
+    setupNavigationButtons();
+    
+    // Initialize font size controls
+    initFontSizeControls();
 });
+
+// Setup Previous and Next Day buttons
+function setupNavigationButtons() {
+    const prevBtn = document.getElementById("prevDayButton");
+    const nextBtn = document.getElementById("nextDayButton");
+    
+    if (!prevBtn || !nextBtn) {
+        console.error("Navigation buttons not found");
+        return;
+    }
+    
+    // Previous day button
+    prevBtn.addEventListener("click", function() {
+        navigateDays(-1);
+    });
+    
+    // Next day button
+    nextBtn.addEventListener("click", function() {
+        navigateDays(1);
+    });
+}
+
+// Navigate to previous or next day
+function navigateDays(delta) {
+    if (!flatpickrInstance) {
+        console.error("Flatpickr not initialized");
+        return;
+    }
+    
+    const prevBtn = document.getElementById("prevDayButton");
+    const nextBtn = document.getElementById("nextDayButton");
+    
+    // Disable buttons temporarily to prevent spam
+    if (prevBtn) prevBtn.disabled = true;
+    if (nextBtn) nextBtn.disabled = true;
+    
+    const currentDate = flatpickrInstance.input.value;
+    let targetDate;
+    
+    if (currentDate) {
+        targetDate = new Date(currentDate);
+        targetDate.setDate(targetDate.getDate() + delta);
+    } else {
+        targetDate = new Date();
+    }
+    
+    // Check date constraints
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Set minimum date (assuming data from Jan 1, 2024)
+    const minDate = new Date(2024, 0, 1);
+    
+    if (targetDate <= today && targetDate >= minDate) {
+        const formattedDate = formatDateForFlatpickr(targetDate);
+        flatpickrInstance.setDate(formattedDate);
+        
+        // Show loading state on buttons
+        if (delta === -1 && prevBtn) {
+            const originalText = prevBtn.innerHTML;
+            prevBtn.innerHTML = "⏳ 載入中...";
+            setTimeout(() => {
+                prevBtn.innerHTML = originalText;
+            }, 500);
+        } else if (delta === 1 && nextBtn) {
+            const originalText = nextBtn.innerHTML;
+            nextBtn.innerHTML = "⏳ 載入中...";
+            setTimeout(() => {
+                nextBtn.innerHTML = originalText;
+            }, 500);
+        }
+        
+        // Fetch the devotional for the new date
+        fetchDevotionalForDate();
+    } else if (targetDate > today) {
+        alert("📅 無法選擇未來的日期 (靈修資料只到今日)");
+    } else if (targetDate < minDate) {
+        alert("📅 無法選擇2024年之前的日期");
+    }
+    
+    // Re-enable buttons after a short delay
+    setTimeout(() => {
+        if (prevBtn) prevBtn.disabled = false;
+        if (nextBtn) nextBtn.disabled = false;
+    }, 600);
+}
+
+// Helper function to format date for flatpickr (YYYY-MM-DD)
+function formatDateForFlatpickr(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
 
 function formatDateToSheetFormat(dateStr) {
     const date = new Date(dateStr);
@@ -93,7 +196,7 @@ function fetchDevotionalForDate() {
     dataDisplay.innerHTML = `<div class="loading">${CONFIG.TEXTS.LOADING}</div>`;
     
     const fetchButton = document.getElementById("fetchButton");
-    fetchButton.disabled = true;
+    if (fetchButton) fetchButton.disabled = true;
     
     const urlWithParam = `${CONFIG.SCRIPT_URL}?date=${encodeURIComponent(formattedDate)}`;
     
@@ -110,7 +213,7 @@ function fetchDevotionalForDate() {
             dataDisplay.innerHTML = `<div class="error-message">${CONFIG.TEXTS.ERROR_PREFIX} ${CONFIG.TEXTS.FETCH_ERROR}: ${error.message}</div>`;
         })
         .finally(() => {
-            fetchButton.disabled = false;
+            if (fetchButton) fetchButton.disabled = false;
         });
 }
 
@@ -170,6 +273,12 @@ function displayDevotionalData(response, displayDate) {
     cardDiv.appendChild(thinkingDiv);
     
     dataDisplay.appendChild(cardDiv);
+    
+    // Apply current font size to new content
+    const savedSize = localStorage.getItem('preferredFontSize');
+    if (savedSize) {
+        applyFontSizeToContent(parseInt(savedSize));
+    }
 }
 
 // Google API functions (kept for compatibility)
@@ -197,20 +306,14 @@ function updateSigninStatus(isSignedIn) {
     }
 }
 
-// Add this at the end of your script.js file
-
 // Font size control functionality
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize font size controls
-    initFontSizeControls();
-});
-
 function initFontSizeControls() {
-    const dataDisplay = document.getElementById('dataDisplay');
     const decreaseBtn = document.getElementById('decreaseFont');
     const increaseBtn = document.getElementById('increaseFont');
     const resetBtn = document.getElementById('resetFont');
     const fontSizeDisplay = document.getElementById('fontSizeDisplay');
+    
+    if (!decreaseBtn || !increaseBtn || !resetBtn) return;
     
     // Default font size (in percent)
     let currentFontSize = 100;
@@ -218,32 +321,15 @@ function initFontSizeControls() {
     const maxFontSize = 200;
     const step = 10;
     
-    // Apply font size to data display and all its children
+    // Apply font size to devotional content
     function applyFontSize(size) {
-        // Store the size as a CSS variable
-        dataDisplay.style.setProperty('--content-font-size', size + '%');
-        
-        // Apply to all devotional content
-        const devotionalElements = dataDisplay.querySelectorAll(
-            '.devotional-title, .devotional-chapter, .devotional-content, .devotional-thinking, .thinking-text'
-        );
-        
-        devotionalElements.forEach(element => {
-            element.style.fontSize = size + '%';
-        });
-        
-        // Also apply to any paragraphs or text elements that might be added
-        const allTextElements = dataDisplay.querySelectorAll('p, div, span');
-        allTextElements.forEach(element => {
-            if (element.className.includes('devotional-') || 
-                element.className.includes('thinking-') ||
-                element.classList.contains('devotional-card')) {
-                element.style.fontSize = size + '%';
-            }
-        });
+        currentFontSize = size;
+        applyFontSizeToContent(size);
         
         // Update display
-        fontSizeDisplay.textContent = size + '%';
+        if (fontSizeDisplay) {
+            fontSizeDisplay.textContent = size + '%';
+        }
         
         // Save preference to localStorage
         localStorage.setItem('preferredFontSize', size);
@@ -252,42 +338,39 @@ function initFontSizeControls() {
     // Increase font size
     increaseBtn.addEventListener('click', function() {
         if (currentFontSize < maxFontSize) {
-            currentFontSize += step;
-            applyFontSize(currentFontSize);
+            applyFontSize(currentFontSize + step);
         }
     });
     
     // Decrease font size
     decreaseBtn.addEventListener('click', function() {
         if (currentFontSize > minFontSize) {
-            currentFontSize -= step;
-            applyFontSize(currentFontSize);
+            applyFontSize(currentFontSize - step);
         }
     });
     
     // Reset font size
     resetBtn.addEventListener('click', function() {
-        currentFontSize = 100;
-        applyFontSize(currentFontSize);
+        applyFontSize(100);
     });
     
     // Load saved preference
     const savedSize = localStorage.getItem('preferredFontSize');
     if (savedSize) {
-        currentFontSize = parseInt(savedSize);
-        applyFontSize(currentFontSize);
+        applyFontSize(parseInt(savedSize));
     }
+}
+
+// Helper function to apply font size to content
+function applyFontSizeToContent(size) {
+    const dataDisplay = document.getElementById('dataDisplay');
+    if (!dataDisplay) return;
     
-    // Override the displayDevotionalData function to ensure new content gets the current font size
-    const originalDisplayDevotionalData = window.displayDevotionalData;
-    if (originalDisplayDevotionalData) {
-        window.displayDevotionalData = function(response, displayDate) {
-            // Call the original function
-            originalDisplayDevotionalData(response, displayDate);
-            // Apply current font size to new content
-            setTimeout(() => {
-                applyFontSize(currentFontSize);
-            }, 50); // Small delay to ensure DOM is updated
-        };
-    }
+    const devotionalElements = dataDisplay.querySelectorAll(
+        '.devotional-title, .devotional-chapter, .devotional-content, .devotional-thinking, .thinking-text, .devotional-date'
+    );
+    
+    devotionalElements.forEach(element => {
+        element.style.fontSize = size + '%';
+    });
 }
